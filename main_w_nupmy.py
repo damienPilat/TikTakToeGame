@@ -2,9 +2,34 @@ import sys
 import numpy as np
 
 
+# Main class for Game
+class Game:
+    # Game Grid
+    matrix_grid = [[" ", " ", "x", "-", ">", " "],
+                   [" ", " ", "|", " ", "|", " "],
+                   ["y", "-", "-", "-", "-", "-"],
+                   ["|", " ", "|", " ", "|", " "],
+                   ["V", "-", "-", "-", "-", "-"],
+                   [" ", " ", "|", " ", "|", " "]]
+
+    current_usr = "X"
+    exit_code = "x"
+
+    usr_moves_one = np.ndarray(shape=(3, 3), dtype=int)
+    usr_moves_one.fill(0)
+    usr_moves_two = np.ndarray(shape=(3, 3), dtype=int)
+    usr_moves_two.fill(0)
+
+    # Dict to store usr moves on grid
+    usr_moves = {
+        "X": usr_moves_one,
+        "O": usr_moves_two
+    }
+
+
+# Store All Possible successful grid completion
 class Results:
-    # Result arrays
-    results_list = []
+    results_list = []       # Result arrays
 
     diagonal = np.identity(3, dtype=int)                # Diagonals
     diagonal_flipped = np.flip(diagonal, 0)
@@ -27,36 +52,13 @@ class Results:
     results_list.extend((left_column, center_column, right_column))
 
 
-class Game:
-    # Game Grid
-    matrix_grid = [[" ", " ", "x", "-", ">", " "],
-                   [" ", " ", "|", " ", "|", " "],
-                   ["y", "-", "-", "-", "-", "-"],
-                   ["|", " ", "|", " ", "|", " "],
-                   ["V", "-", "-", "-", "-", "-"],
-                   [" ", " ", "|", " ", "|", " "]]
-
-    current_usr = "X"
-    usr_moves_one = np.ndarray(shape=(3, 3), dtype=int)
-    usr_moves_one.fill(0)
-    usr_moves_two = np.ndarray(shape=(3, 3), dtype=int)
-    usr_moves_two.fill(0)
-
-    usr_moves = {
-        "X": usr_moves_one,
-        "O": usr_moves_two
-    }
-
-    exit_code = "x"
-
-
-# Print Matrix
+# Print Matrix, row by row
 def print_matrix(matrix):
     for row in matrix:
-        print(convert_row_to_line(row))     # Print row
+        print(convert_row_to_line(row))
 
 
-# Print matrix row
+# Print row of matrix by converting to str
 def convert_row_to_line(row):
     str_row = ""
     for el in row:
@@ -64,15 +66,15 @@ def convert_row_to_line(row):
     return str_row
 
 
-# Get user move and place on grid
-def get_user_move():
+# Individual usr moves
+def user_move():
     move = formatted_input()            # Get usr move in formatted form
     position = get_coordinates(move)    # Get position from move
     set_move(position)                  # Set usr move on grid
-    store_move(move)                    # Store usrs move
+    store_move(move)                    # Store usr move
     print_matrix(g.matrix_grid)         # Update matrix
     check_win()                         # Check if usr won
-    change_usr()                        # Update usr
+    change_usr()                        # Update current usr
 
 
 # Get input in correct form and format into list
@@ -88,16 +90,16 @@ def formatted_input():
         # Split input into list
         form_input = list(map(int, raw_input.split(',')))
 
-        # Check correct number of paramaters provided
+        # Check correct number of parameters provided
         if len(form_input) != 2:
-            print("please provide only two numbers separated by a comma")
-            formatted_input()
+            print("Please provide only two numbers separated by a comma.")
+            formatted_input()   # recall function
 
         # Check values fit in grid
         if form_input[0] < 3 and form_input[1] < 3:
             return form_input
         else:
-            print("Enter value between 0 and 2")
+            print("Enter value between 0 and 2.")
             formatted_input()
     except ValueError:
         # Catch non-int values
@@ -109,10 +111,11 @@ def get_coordinates(move):
     position = [None, None]
     # map usr input to game matrix
     for i in range(len(position)):
-        position[i] = move[i] * 2 + 1
+        position[i] = move[i] * 2 + 1       # move from 3x3 to 6x6 w/ 1 offset left&right
     return position
 
 
+# Set usr move on grid if position empty
 def set_move(position):
     if g.matrix_grid[position[1]][position[0]] == " ":
         g.matrix_grid[position[1]][position[0]] = g.current_usr  # Set move on grid
@@ -121,9 +124,9 @@ def set_move(position):
         formatted_input()
 
 
-# Store usrs moves on matrix
+# Store usr moves on matrix
 def store_move(move):
-    g.usr_moves[g.current_usr][move[0], move[1]] = 1
+    g.usr_moves[g.current_usr][move[0], move[1]] = 1    # access usr_moves dict for current usr and add mark on matrix
 
 
 # Go through results array and check for match
@@ -141,6 +144,7 @@ def usr_won():
     sys.exit()
 
 
+# Change current usr
 def change_usr():
     if g.current_usr != "X":
         g.current_usr = "X"
@@ -150,9 +154,10 @@ def change_usr():
 
 if __name__ == '__main__':
     g = Game()                          # Start new Game
-    r = Results()
-    print_matrix(g.matrix_grid)         # Print matrix
+    r = Results()                       # Set results
+    print_matrix(g.matrix_grid)         # Print start matrix
 
+    # Run till Success or usr ends
     while True:
-        get_user_move()     # Get 1st user move
-        get_user_move()     # Get 2nd user move
+        user_move()     # Get 1st user move
+        user_move()     # Get 2nd user move
